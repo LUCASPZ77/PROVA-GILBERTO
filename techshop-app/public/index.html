@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel TechShop - Full Stack</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
+    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #007bff; color: white; }
+    .btn { padding: 6px 12px; cursor: pointer; border: none; border-radius: 4px; }
+    .btn-update { background-color: #28a745; color: white; }
+    .btn-delete { background-color: #dc3545; color: white; }
+    .seletor-acesso { padding: 10px; font-weight: bold; background-color: #e2e3e5; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Gerenciamento de Dados TechShop</h1>
+
+  <!-- Simulador de Nível de Acesso -->
+  <div class="card seletor-acesso">
+    <label for="nivelAcesso">Simular Nível de Acesso Atual: </label>
+    <select id="nivelAcesso">
+      <option value="Client">Cliente (Apenas Visualização)</option>
+      <option value="Admin" selected>Administrador (Acesso Total)</option>
+    </select>
+  </div>
+
+  <!-- Tabela 1: Relatório de Vendas -->
+  <div class="card">
+    <h2>Relatório de Vendas</h2>
+    <button class="btn btn-update" onclick="carregarVendas()">Atualizar Relatório</button>
+    <table id="tabelaVendas">
+      <thead>
+        <tr>
+          <th>ID Pedido</th>
+          <th>Cliente</th>
+          <th>Total Pedido</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Tabela 2: Gestão de Estoque -->
+  <div class="card">
+    <h2>Controle de Estoque</h2>
+    <table id="tabelaEstoque">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Estoque Atual</th>
+          <th>Total Vendido</th>
+          <th>Ação (Restrito Admin)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Tabela 3: Gestão de Clientes -->
+  <div class="card">
+    <h2>Gestão de Clientes (Exclusão Restrita)</h2>
+    <table id="tabelaClientes">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>Ação (Restrito Admin)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
