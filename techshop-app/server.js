@@ -12,7 +12,8 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://oiuebfhe_db_user:rtB355S9gjXf77To@prova.9cbxx1j.mongodb.net/techshop?appName=PROVA';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucaspz:Tchaca22@cluster0.deqgluq.mongodb.net/techshop?appName=Cluster0';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 
 const clienteSchema = new mongoose.Schema({ nome: String, email: String, telefone: String });
 const produtoSchema = new mongoose.Schema({ produto: String, estoque: Number, total_vendido: Number });
@@ -32,25 +33,25 @@ const inicializarBancoSeVazio = async () => {
     ]);
   }
 
-  if (await Produto.countDocuments() ===  ​0) {
+  if (await Produto.countDocuments() === 0) {
     await Produto.insertMany([
       { produto: 'Notebook Dell XPS 13', estoque: 15, total_vendido: 42 },
-      { produto: 'Monitor LG Ultrawide 29"', estoque:  ​28, total_vendido:  ​85 },
-      { produto: 'Teclado Mecânico Keychron', estoque:  ​34, total_vendido:  ​110 },
-      { produto: 'Mouse Logitech MX Master', estoque:  ​50, total_vendido:  ​95 }
+      { produto: 'Monitor LG Ultrawide 29"', estoque: 28, total_vendido: 85 },
+      { produto: 'Teclado Mecânico Keychron', estoque: 34, total_vendido: 110 },
+      { produto: 'Mouse Logitech MX Master', estoque: 50, total_vendido: 95 }
     ]);
   }
 
-  if (await Venda.countDocuments() ===  ​0) {
+  if (await Venda.countDocuments() === 0) {
     await Venda.insertMany([
-      { id_pedido:  ​1001, cliente: 'Lucas Zambelli', total: 'R$ ​7500.00', status: 'Concluído' },
-      { id_pedido:  ​1002, cliente: 'Mariana Souza', total: 'R$ ​1450.00', status: 'Concluído' },
-      { id_pedido:  ​1003, cliente: 'Roberto Alves', total: 'R$ ​620.00', status: 'Pendente' }
+      { id_pedido: 1001, cliente: 'Lucas Zambelli', total: 'R$ 7500.00', status: 'Concluído' },
+      { id_pedido: 1002, cliente: 'Mariana Souza', total: 'R$ 1450.00', status: 'Concluído' },
+      { id_pedido: 1003, cliente: 'Roberto Alves', total: 'R$ 620.00', status: 'Pendente' }
     ]);
   }
 };
 
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('Conectado ao MongoDB Atlas');
     await inicializarBancoSeVazio();
@@ -65,6 +66,28 @@ const verificarNivelAcesso = (req, res, next) => {
   }
   next();
 };
+
+app.get('/api/config', (req, res) => {
+  res.json({ googleClientId: GOOGLE_CLIENT_ID });
+});
+
+app.post('/api/auth/google', async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    return res.status(400).json({ erro: 'Credencial Google não informada.' });
+  }
+
+  try {
+    const resposta = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+    const dados = await resposta.json();
+    if (!resposta.ok || (GOOGLE_CLIENT_ID && dados.aud !== GOOGLE_CLIENT_ID)) {
+      return res.status(401).json({ erro: 'Credencial Google inválida.' });
+    }
+    res.json({ usuario: { nome: dados.name || dados.email, email: dados.email, foto: dados.picture } });
+  } catch (error) {
+    res.status(502).json({ erro: 'Não foi possível validar a conta Google.' });
+  }
+});
 
 // Rotas de Clientes
 app.get('/api/clientes', async (req, res) => {
@@ -85,7 +108,13 @@ app.get('/api/clientes', async (req, res) => {
 
 app.delete('/api/clientes/:id', verificarNivelAcesso, async (req, res) => {
   try {
-    await Cliente.findByIdAndDelete(req.params.id);
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ erro: 'ID de cliente inválido.' });
+    }
+    const cliente = await Cliente.findByIdAndDelete(req.params.id);
+    if (!cliente) {
+      return res.status(404).json({ erro: 'Cliente não encontrado.' });
+    }
     res.json({ mensagem: 'Cliente removido com sucesso!' });
   } catch (error) {
     res.status(500).json({ erro: error.message });
@@ -119,18 +148,21 @@ app.get('/api/produtos', obterEstoque);
 const salvarEstoque = async (req, res) => {
   try {
     const qtd = req.body.estoque ?? req.body.estoque_atual ?? req.body.novoEstoque;
-​    if (qtd === undefined || qtd === null) {
-      return res.status(400).json({ erro: 'Valor de estoque não informado.' });
+    if (qtd === undefined || qtd === null || !Number.isInteger(Number(qtd)) || Number(qtd) < 0) {
+      return res.status(400).json({ erro: 'O estoque deve ser um número inteiro maior ou igual a zero.' });
     }
-​    const produtoAtualizado = await Produto.findByIdAndUpdate(
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ erro: 'ID de produto inválido.' });
+    }
+    const produtoAtualizado = await Produto.findByIdAndUpdate(
       req.params.id,
       { estoque: Number(qtd) },
-      { new: true }
+      { returnDocument: 'after' }
     );
-​    if (!produtoAtualizado) {
+  if (!produtoAtualizado) {
       return res.status(404).json({ erro: 'Produto não encontrado.' });
     }
-​    res.json({
+  res.json({
       mensagem: 'Estoque atualizado e gravado no MongoDB!',
       produto: {
         _id: produtoAtualizado._id.toString(),

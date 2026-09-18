@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Painel TechShop - Full Stack</title>
+  <script src="https://accounts.google.com/gsi/client"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f6f9; }
     .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -17,6 +18,12 @@
 </head>
 <body>
   <h1>Gerenciamento de Dados TechShop</h1>
+
+  <div class="card">
+    <h2>Login</h2>
+    <div id="googleLogin"></div>
+    <p id="usuarioGoogle">Nenhuma conta Google conectada.</p>
+  </div>
 
   <!-- Simulador de Nível de Acesso -->
   <div class="card seletor-acesso">
