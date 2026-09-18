@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lucaspz:Tchaca22@cluster0.deqgluq.mongodb.net/techshop?appName=Cluster0';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '440054836464-p2vbuej2drjaodbfjb3073i0aatrajgh.apps.googleusercontent.com';
 
 const clienteSchema = new mongoose.Schema({ nome: String, email: String, telefone: String });
 const produtoSchema = new mongoose.Schema({ produto: String, estoque: Number, total_vendido: Number });
